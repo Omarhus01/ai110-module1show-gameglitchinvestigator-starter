@@ -45,9 +45,7 @@ A number guessing game built with Streamlit where the player tries to guess a se
 
 **All 7 pytest tests passing:**
 
-![pytest results showing 7 passed](screenshots/pytest_results.png)
-
-> To add this screenshot: run `pytest tests/ -v` in your terminal, take a screenshot, save it as `screenshots/pytest_results.png`
+![pytest results showing 7 passed](tests_screenshot.png)
 
 ## 🚀 Stretch Features
 
