@@ -1,74 +1,6 @@
 import random
 import streamlit as st
-
-def get_range_for_difficulty(difficulty: str):
-    #Easy has way too few attempts and smaller range than  Hard which doesn't make sense 
-    #Need fixation for the ranges according to the difficulties
-    if difficulty == "Easy":
-        return 1, 20
-    if difficulty == "Normal":
-        return 1, 100
-    if difficulty == "Hard":
-        return 1, 50
-    return 1, 100
-
-
-def parse_guess(raw: str):
-    if raw is None:
-        return False, None, "Enter a guess."
-
-    if raw == "":
-        return False, None, "Enter a guess."
-
-    try:
-        if "." in raw:
-            value = int(float(raw))
-        else:
-            value = int(raw)
-    except Exception:
-        return False, None, "That is not a number."
-
-    return True, value, None
-
-
-def check_guess(guess, secret):
-    if guess == secret:
-        return "Win", "🎉 Correct!"
-
-    try:
-        if guess > secret:
-            return "Too High", "📉 Go LOWER!"
-        else:
-            return "Too Low", "📈 Go HIGHER!"
-    except TypeError:
-        g = str(guess)
-        if g == secret:
-            return "Win", "🎉 Correct!"
-        if g > secret:
-            return "Too High", "📉 Go LOWER!"
-        return "Too Low", "📈 Go HIGHER!"
-
-
-def update_score(current_score: int, outcome: str, attempt_number: int):
-    if outcome == "Win":
-        points = 100 - 10 * (attempt_number + 1)
-        if points < 10:
-            points = 10
-        return current_score + points
-
-    if outcome == "Too High":
-        if attempt_number % 2 == 0:
-            #That's incorrect, why we get more points for being too high on even attempts? 
-            # This should be fixed to reward the player for being closer to the secret number, 
-            # not just based on attempt parity.
-            return current_score + 5
-        #it works correclty on odd attempts, but this is not correct still
-        return current_score - 5
-
-    if outcome == "Too Low":
-        return current_score - 5
-
-    return current_score
+from logic_utils import get_range_for_difficulty, parse_guess, check_guess, update_score
 
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
 
@@ -83,6 +15,9 @@ difficulty = st.sidebar.selectbox(
     index=1,
 )
 
+# FIX: Attempt limits were out of order — Easy had 6 and Normal had 8, meaning Normal was
+# more forgiving than Easy which made no sense. Claude Code spotted this while reviewing
+# the code. Fixed by setting Easy:10, Normal:7, Hard:5 so limits decrease with difficulty.
 attempt_limit_map = {
     "Easy": 10,
     "Normal": 7,

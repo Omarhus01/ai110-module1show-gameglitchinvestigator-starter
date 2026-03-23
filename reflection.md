@@ -20,18 +20,29 @@ When I first ran the game it looked like a normal working guessing game — ther
 
 ## 2. How did you use AI as a teammate?
 
+I used Claude Code (Anthropic's AI coding assistant) throughout this project to help me read the code, identify bugs, explain confusing logic, and make fixes. It was helpful for catching things I wouldn't have spotted just by playing the game, especially bugs that only show up when you actually read the source code.
+
 - Which AI tools did you use on this project (for example: ChatGPT, Gemini, Copilot)?
+  - I used **Claude Code** as my primary AI tool throughout the project.
+
 - Give one example of an AI suggestion that was correct (including what the AI suggested and how you verified the result).
+  - Claude Code correctly identified that the hints in `check_guess` were reversed. It read the function and pointed out that `guess > secret` was returning "Go HIGHER!" when it should say "Go LOWER!" — and vice versa. I verified this by opening the Developer Debug Info panel to see the secret number, then submitting a guess that was clearly lower than it. The old code told me to go lower when I was already below the target, which confirmed the bug. After the fix, I ran the same test and the hint correctly said "Go HIGHER!" I also verified it passed in pytest with `test_hint_message_too_high` and `test_hint_message_too_low`.
+
 - Give one example of an AI suggestion that was incorrect or misleading (including what the AI suggested and how you verified the result).
+  - When I asked Claude Code to explain why the existing pytest tests were failing, it initially described the issue as the tests "not importing correctly." That was misleading — the real problem was that `check_guess` returns a tuple `(outcome, message)` but the tests were comparing the full result against a plain string like `"Win"`. I verified this by reading the actual error output from pytest, which showed `assert ('Win', '🎉 Correct!') == 'Win'` — clearly a tuple vs string mismatch, not an import issue.
 
 ---
 
 ## 3. Debugging and testing your fixes
 
 - How did you decide whether a bug was really fixed?
-- Describe at least one test you ran (manual or using pytest)  
-  and what it showed you about your code.
+  - I used two checks: first I ran `pytest` to confirm the relevant test passed, then I ran the live app with `streamlit run app.py` and manually tested the same scenario that originally showed the bug. If both passed, I considered the fix verified.
+
+- Describe at least one test you ran (manual or using pytest) and what it showed you about your code.
+  - I ran the full pytest suite after fixing the reversed hints and refactoring the functions into `logic_utils.py`. Before the fix, all 3 existing tests failed because they were comparing against plain strings while `check_guess` returns a tuple. After fixing the tests to unpack the tuple and adding new tests for the hint messages, all 7 tests passed. This showed me that the refactor didn't break anything and that the hint logic was now correct.
+
 - Did AI help you design or understand any tests? How?
+  - Yes — Claude Code wrote the new test cases for me after I described what the bugs were. It suggested checking not just the outcome string (like "Too High") but also the message content (checking that "LOWER" appears in the message when the guess is too high). That was a more thorough way to test the fix than I would have thought of on my own, since it directly tests the part that was actually broken.
 
 ---
 
