@@ -2,6 +2,8 @@ import random
 import streamlit as st
 
 def get_range_for_difficulty(difficulty: str):
+    #Easy has way too few attempts and smaller range than  Hard which doesn't make sense 
+    #Need fixation for the ranges according to the difficulties
     if difficulty == "Easy":
         return 1, 20
     if difficulty == "Normal":
@@ -35,16 +37,16 @@ def check_guess(guess, secret):
 
     try:
         if guess > secret:
-            return "Too High", "📈 Go HIGHER!"
+            return "Too High", "📉 Go LOWER!"
         else:
-            return "Too Low", "📉 Go LOWER!"
+            return "Too Low", "📈 Go HIGHER!"
     except TypeError:
         g = str(guess)
         if g == secret:
             return "Win", "🎉 Correct!"
         if g > secret:
-            return "Too High", "📈 Go HIGHER!"
-        return "Too Low", "📉 Go LOWER!"
+            return "Too High", "📉 Go LOWER!"
+        return "Too Low", "📈 Go HIGHER!"
 
 
 def update_score(current_score: int, outcome: str, attempt_number: int):
@@ -56,7 +58,11 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
 
     if outcome == "Too High":
         if attempt_number % 2 == 0:
+            #That's incorrect, why we get more points for being too high on even attempts? 
+            # This should be fixed to reward the player for being closer to the secret number, 
+            # not just based on attempt parity.
             return current_score + 5
+        #it works correclty on odd attempts, but this is not correct still
         return current_score - 5
 
     if outcome == "Too Low":
@@ -78,8 +84,8 @@ difficulty = st.sidebar.selectbox(
 )
 
 attempt_limit_map = {
-    "Easy": 6,
-    "Normal": 8,
+    "Easy": 10,
+    "Normal": 7,
     "Hard": 5,
 }
 attempt_limit = attempt_limit_map[difficulty]
