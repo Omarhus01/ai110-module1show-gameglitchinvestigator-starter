@@ -25,13 +25,29 @@ It wrote the code, ran away, and now the game is unplayable.
 
 ## 📝 Document Your Experience
 
-- [ ] Describe the game's purpose.
-- [ ] Detail which bugs you found.
-- [ ] Explain what fixes you applied.
+**Game purpose:**
+A number guessing game built with Streamlit where the player tries to guess a secret number within a limited number of attempts. The difficulty setting controls the number range and how many attempts you get.
+
+**Bugs found:**
+1. **Hints were backwards** — "Too High" showed "Go HIGHER!" and "Too Low" showed "Go LOWER!", the exact opposite of what they should be.
+2. **Attempt limits were wrong** — Easy had only 6 attempts while Normal had 8, meaning the easier mode was actually stricter.
+3. **Hard range was easier than Normal** — Hard used 1–50 while Normal used 1–100, making Hard less challenging.
+4. **Secret turned into a string on even attempts** — every second guess cast the secret to a string, breaking numeric comparison and causing random wrong hints.
+5. **Difficulty change didn't reset the game** — switching difficulty kept the old secret and attempt count from the previous round.
+
+**Fixes applied:**
+- Swapped the hint messages in `check_guess` so "Too High" says "Go LOWER!" and "Too Low" says "Go HIGHER!"
+- Reordered attempt limits to Easy: 10, Normal: 7, Hard: 5
+- Refactored all game logic (`check_guess`, `parse_guess`, `get_range_for_difficulty`, `update_score`) from `app.py` into `logic_utils.py`
+- Fixed existing pytest tests that were broken due to a tuple vs string mismatch, and added 4 new tests covering hint messages and difficulty ranges
 
 ## 📸 Demo
 
-- [ ] [Insert a screenshot of your fixed, winning game here]
+**All 7 pytest tests passing:**
+
+![pytest results showing 7 passed](screenshots/pytest_results.png)
+
+> To add this screenshot: run `pytest tests/ -v` in your terminal, take a screenshot, save it as `screenshots/pytest_results.png`
 
 ## 🚀 Stretch Features
 

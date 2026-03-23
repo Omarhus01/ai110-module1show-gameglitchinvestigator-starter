@@ -1,7 +1,22 @@
-def get_range_for_difficulty(difficulty: str):
-    """Return (low, high) inclusive range for a given difficulty."""
-    #Easy has way too few attempts and smaller range than Hard which doesn't make sense
-    #Need fixation for the ranges according to the difficulties
+def get_range_for_difficulty(difficulty: str) -> tuple[int, int]:
+    """
+    Return the inclusive (low, high) number range for a given difficulty level.
+
+    Args:
+        difficulty: One of "Easy", "Normal", or "Hard".
+
+    Returns:
+        A tuple (low, high) representing the inclusive guessing range.
+        Defaults to (1, 100) if an unrecognised difficulty is passed.
+
+    Examples:
+        >>> get_range_for_difficulty("Easy")
+        (1, 20)
+        >>> get_range_for_difficulty("Normal")
+        (1, 100)
+    """
+    # Easy has way too few attempts and smaller range than Hard which doesn't make sense
+    # Need fixation for the ranges according to the difficulties
     if difficulty == "Easy":
         return 1, 20
     if difficulty == "Normal":
@@ -11,11 +26,28 @@ def get_range_for_difficulty(difficulty: str):
     return 1, 100
 
 
-def parse_guess(raw: str):
+def parse_guess(raw: str) -> tuple[bool, int | None, str | None]:
     """
-    Parse user input into an int guess.
+    Parse raw user input into a validated integer guess.
 
-    Returns: (ok: bool, guess_int: int | None, error_message: str | None)
+    Accepts whole numbers and decimals (decimals are truncated to int).
+    Returns a three-element tuple so the caller always gets a consistent
+    structure regardless of whether parsing succeeded.
+
+    Args:
+        raw: The raw string entered by the player.
+
+    Returns:
+        A tuple of (ok, guess_int, error_message) where:
+            - ok (bool): True if parsing succeeded, False otherwise.
+            - guess_int (int | None): The parsed integer, or None on failure.
+            - error_message (str | None): A human-readable error, or None on success.
+
+    Examples:
+        >>> parse_guess("42")
+        (True, 42, None)
+        >>> parse_guess("abc")
+        (False, None, 'That is not a number.')
     """
     if raw is None:
         return False, None, "Enter a guess."
@@ -34,11 +66,29 @@ def parse_guess(raw: str):
     return True, value, None
 
 
-def check_guess(guess, secret):
+def check_guess(guess: int, secret: int) -> tuple[str, str]:
     """
-    Compare guess to secret and return (outcome, message).
+    Compare the player's guess against the secret number.
 
-    outcome examples: "Win", "Too High", "Too Low"
+    Args:
+        guess: The player's guessed integer.
+        secret: The target secret number. Should be an int, but a TypeError
+                fallback handles cases where secret is accidentally a string.
+
+    Returns:
+        A tuple of (outcome, message) where outcome is one of:
+            - "Win"      — guess matches the secret.
+            - "Too High" — guess is above the secret.
+            - "Too Low"  — guess is below the secret.
+        And message is a human-readable hint string for the player.
+
+    Examples:
+        >>> check_guess(50, 50)
+        ('Win', '🎉 Correct!')
+        >>> check_guess(60, 50)
+        ('Too High', '📉 Go LOWER!')
+        >>> check_guess(40, 50)
+        ('Too Low', '📈 Go HIGHER!')
     """
     if guess == secret:
         return "Win", "🎉 Correct!"
@@ -60,8 +110,28 @@ def check_guess(guess, secret):
         return "Too Low", "📈 Go HIGHER!"
 
 
-def update_score(current_score: int, outcome: str, attempt_number: int):
-    """Update score based on outcome and attempt number."""
+def update_score(current_score: int, outcome: str, attempt_number: int) -> int:
+    """
+    Calculate and return the updated score based on the guess outcome.
+
+    Winning earlier yields more points (max 80 on attempt 1, minimum 10).
+    Wrong guesses deduct 5 points, except "Too High" on even attempts
+    which incorrectly awards +5 — this is a known bug left intentionally.
+
+    Args:
+        current_score: The player's score before this guess.
+        outcome: One of "Win", "Too High", or "Too Low".
+        attempt_number: The 1-based index of the current attempt.
+
+    Returns:
+        The updated integer score after applying the outcome.
+
+    Examples:
+        >>> update_score(0, "Win", 1)
+        80
+        >>> update_score(50, "Too Low", 3)
+        45
+    """
     if outcome == "Win":
         points = 100 - 10 * (attempt_number + 1)
         if points < 10:
@@ -70,11 +140,10 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
 
     if outcome == "Too High":
         if attempt_number % 2 == 0:
-            #That's incorrect, why we get more points for being too high on even attempts?
-            # This should be fixed to reward the player for being closer to the secret number,
-            # not just based on attempt parity.
+            # That's incorrect — why do we get more points for being too high on even attempts?
+            # This should be fixed to always deduct points for wrong guesses.
+            # Known bug, left in place intentionally for this assignment.
             return current_score + 5
-        #it works correctly on odd attempts, but this is not correct still
         return current_score - 5
 
     if outcome == "Too Low":

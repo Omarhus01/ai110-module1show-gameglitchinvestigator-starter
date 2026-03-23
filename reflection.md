@@ -49,14 +49,23 @@ I used Claude Code (Anthropic's AI coding assistant) throughout this project to 
 ## 4. What did you learn about Streamlit and state?
 
 - In your own words, explain why the secret number kept changing in the original app.
+  - Every time you interact with anything in a Streamlit app — clicking a button, typing in a field — the entire Python script reruns from the top. In the original app, the secret number was generated with `random.randint()` at the top level of the script with no protection, so every rerun picked a new random number. The target was literally changing on every click, making it impossible to win.
+
 - How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
+  - Imagine every time you click a button on a webpage, the whole page reloads and forgets everything — your form data, your progress, everything. That's what Streamlit does by default. Session state is like a small notebook that survives those reloads. You write something into it once, and it stays there no matter how many times the page reruns. So instead of generating a new secret number on every rerun, you check the notebook first — if there's already a number there, use it; if not, generate one and write it down.
+
 - What change did you make that finally gave the game a stable secret number?
+  - The fix was already in place using `if "secret" not in st.session_state` before generating the number. This means the secret is only generated once — the very first time the app runs. On every rerun after that, the condition is False so it skips the `random.randint()` call and keeps using the existing value stored in session state.
 
 ---
 
 ## 5. Looking ahead: your developer habits
 
 - What is one habit or strategy from this project that you want to reuse in future labs or projects?
-  - This could be a testing habit, a prompting strategy, or a way you used Git.
+  - Reading the code before trusting it. The game looked fine from the outside but had multiple bugs that were only visible in the source. Going forward I want to make it a habit to actually read through any AI-generated code line by line before assuming it works, especially for logic that involves comparisons or state management.
+
 - What is one thing you would do differently next time you work with AI on a coding task?
+  - I would verify AI explanations against the actual error output immediately instead of taking them at face value. When Claude Code described the failing tests as an import issue, I spent a moment confused before checking the real pytest output myself. Reading the error message directly was faster and more accurate than the AI's first explanation.
+
 - In one or two sentences, describe how this project changed the way you think about AI generated code.
+  - I used to assume that if AI-generated code ran without crashing, it was probably correct. This project showed me that code can run fine on the surface while having multiple logical bugs underneath — and that the AI that wrote the broken code can also be the tool that helps you find and fix those same bugs, as long as you stay in the driver's seat and verify everything yourself.
